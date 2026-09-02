@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusPulse: Accessible Multimodal Health & Safety Companion</title>
+  <meta name="description" content="Rapid, structured, accessible multimodal first-aid guidance, multilingual translation, and emergency dispatch powered by Gemini.">
+  
+  <!-- Modern Tailwind Styles for fast utility fallback & Custom Design System -->
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚑</text></svg>">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Header & Emergency Bar -->
+    <header class="app-header" role="banner">
+      <div class="brand-badge">
+        <div class="brand-icon" aria-hidden="true">🚑</div>
+        <div>
+          <div class="brand-title">CampusPulse</div>
+          <div class="brand-subtitle">
+            <span>Multimodal Health & Emergency Safety</span>
+            <span class="offline-pill" id="providerBadge">Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <select id="langSelect" aria-label="Select Language" style="font-weight:600;">
+          <option value="en">🌐 English</option>
+          <option value="es">Español (Spanish)</option>
+          <option value="hi">हिन्दी (Hindi)</option>
+          <option value="zh">中文 (Mandarin)</option>
+          <option value="fr">Français (French)</option>
+          <option value="ar">العربية (Arabic)</option>
+          <option value="de">Deutsch (German)</option>
+        </select>
+
+        <!-- SOS Strobe Beacon Button -->
+        <button class="btn-secondary" id="btnSosBeacon" title="Loud Alarm & Screen Strobe" style="color:#ef4444; border-color:#ef4444;">
+          🚨 Beacon
+        </button>
+
+        <!-- Settings Button -->
+        <button class="btn-secondary" id="btnOpenSettings" title="API Key Settings">
+          ⚙️ Settings
+        </button>
+
+        <!-- Main SOS Button -->
+        <button class="btn-sos-primary" id="btnOpenSosModal" aria-label="Dispatch Emergency SOS">
+          <span>🆘</span>
+          <span>SOS ALERT</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Quick Emergency Protocol Bar -->
+    <div class="quick-emergency-bar" role="navigation" aria-label="Quick Emergency Protocols">
+      <button class="chip-emergency active" data-protocol="burn">🔥 Thermal Burn</button>
+      <button class="chip-emergency" data-protocol="chemical_splash">🧪 Chemical Splash / Lab Hazard</button>
+      <button class="chip-emergency" data-protocol="cpr">💓 CPR / Cardiac Arrest</button>
+      <button class="chip-emergency" data-protocol="choking">🫁 Choking (Heimlich)</button>
+      <button class="chip-emergency" data-protocol="bleeding">🩸 Severe Bleeding</button>
+      <button class="chip-emergency" data-protocol="anaphylaxis">💉 Anaphylaxis / Allergic Reaction</button>
+      <button class="chip-emergency" data-protocol="seizure">🧠 Seizure</button>
+      <button class="chip-emergency" data-protocol="heat_stroke">☀️ Heat Stroke</button>
+      <button class="chip-emergency" data-protocol="sprain_fracture">🦴 Sprain / Fracture</button>
+      <button class="chip-emergency" data-protocol="fainting_syncope">💫 Fainting / Syncope</button>
+    </div>
+
+    <!-- Accessibility Bar -->
+    <div class="safety-card" style="padding:0.75rem 1.25rem; margin-bottom:1.25rem; background:var(--bg-surface-elevated);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; font-size:0.85rem;">
+        <span style="font-weight:700; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
+          ♿ Universal Accessibility Suite:
+        </span>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+            <input type="checkbox" id="toggleHighContrast"> 🟡 High Contrast
+          </label>
+          <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+            <input type="checkbox" id="toggleLargeText"> 🔍 Large Font
+          </label>
+          <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+            <input type="checkbox" id="toggleDyslexia"> 📖 Dyslexia Font
+          </label>
+          <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+            <input type="checkbox" id="togglePlainLanguage"> 💡 Plain Language
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <main class="main-grid">
+      
+      <!-- Left Column: Input Scanner, Timers, Metronome, Campus Map -->
+      <section>
+        
+        <!-- Multimodal Scanner Card -->
+        <div class="safety-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span>📷</span> Multimodal Emergency Scanner
+            </h2>
+            <span style="font-size:0.8rem; color:var(--text-secondary);">Image & Voice Enabled</span>
+          </div>
+
+          <!-- Dropzone / Image Uploader -->
+          <div class="scanner-dropzone" id="dropZone">
+            <div style="font-size:2.2rem; margin-bottom:0.5rem;">📸</div>
+            <div style="font-weight:700; font-size:0.95rem; margin-bottom:0.25rem;">Upload or Snap Hazard / Injury Photo</div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">Click to browse chemical label, wound, or safety hazard</div>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none;">
+
+          <!-- Image Preview -->
+          <div class="preview-container" id="previewContainer">
+            <img id="imagePreview" src="" alt="Incident Preview">
+            <button class="remove-media-btn" id="removeMediaBtn" title="Remove Photo">✕</button>
+          </div>
+
+          <!-- Text / Voice Description -->
+          <div class="prompt-box">
+            <textarea 
+              id="promptInput" 
+              class="prompt-textarea" 
+              placeholder="Describe symptoms, incident, or location (e.g., 'Student burned hand on boiling acid beaker in Chem Lab 304')..."
+              rows="3"
+            ></textarea>
+            <button class="mic-btn" id="micBtn" title="Speak Incident (Voice Input)">🎙️</button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-row">
+            <button class="btn-primary" id="btnAnalyze">
+              <span>⚡</span> Immediate Triage & Action
+            </button>
+          </div>
+        </div>
+
+        <!-- CPR Metronome Card (Shown when CPR active) -->
+        <div class="safety-card" id="cprContainer" style="display:none; border-color:#ef4444; background:linear-gradient(135deg, #1e1b4b, #0f172a);">
+          <div class="card-header" style="border-bottom-color:rgba(239,68,68,0.3);">
+            <h3 class="card-title" style="color:#f87171;">
+              <span>💓</span> CPR Chest Compression Metronome (110 BPM)
+            </h3>
+          </div>
+          <p style="font-size:0.85rem; color:#cbd5e1; text-align:center;">
+            Push HARD and FAST in the center of the chest (2 inches deep). Sync each compression with the heartbeat.
+          </p>
+          <div class="metronome-visual" id="cprHeart">❤️</div>
+          <div style="display:flex; justify-content:center; gap:0.5rem; margin-top:0.75rem;">
+            <button class="btn-sos-primary" id="btnToggleCpr">Start CPR Metronome (110 BPM)</button>
+          </div>
+        </div>
+
+        <!-- First Aid Timer Card -->
+        <div class="tool-timer-card" id="timerContainer" style="display:none;">
+          <h3 id="timerTitle" style="font-size:1.05rem; font-weight:700; color:#38bdf8;">💧 Cool Water Rinse Timer</h3>
+          <div class="timer-digits" id="timerDisplay">15:00</div>
+          <div class="timer-controls">
+            <button class="btn-primary" id="btnStartTimer" style="flex:initial; padding:0.5rem 1.25rem;">Start Timer</button>
+            <button class="btn-secondary" id="btnResetTimer">Reset</button>
+          </div>
+        </div>
+
+        <!-- Campus Safety Facilities & AED Locator -->
+        <div class="safety-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <span>🗺️</span> Nearest Campus Safety Stations & AEDs
+            </h3>
+            <span style="font-size:0.8rem; color:#38bdf8;">Live Locator</span>
+          </div>
+          <div id="facilitiesList">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Column: Structured Emergency Protocols & Guidance -->
+      <section>
+        
+        <!-- Results Container -->
+        <div class="safety-card" id="resultsContainer" style="min-height:550px;">
+          
+          <div class="card-header">
+            <div>
+              <h2 class="card-title" id="protocolTitle">Thermal / Heat Burn</h2>
+              <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Immediate First-Aid Protocol</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <button class="btn-icon" id="btnReadAloud" title="Read Aloud (Voice Guidance)">
+                🔊
+              </button>
+              <span id="speechStatus" style="font-size:0.75rem; color:var(--text-secondary);">Read Aloud</span>
+            </div>
+          </div>
+
+          <!-- Severity Banner -->
+          <div class="severity-banner moderate" id="severityBanner">
+            <div>
+              <span class="badge-tag" id="severityBadge">SEVERITY: MODERATE</span>
+              <div id="severityText" style="font-weight:700; margin-top:0.25rem;">Amber - Needs Immediate Action</div>
+            </div>
+            <span style="font-size:1.75rem;">⚠️</span>
+          </div>
+
+          <!-- Immediate Action Callout -->
+          <div class="immediate-callout">
+            <h4>🚨 IMMEDIATE CRITICAL ACTION:</h4>
+            <p id="immediateActionText">
+              Cool immediately with cool (not freezing) running tap water for at least 15 to 20 minutes.
+            </p>
+          </div>
+
+          <!-- Step by Step Checklist -->
+          <div class="steps-container">
+            <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:0.6rem; color:var(--color-primary-blue);">
+              📋 Step-by-Step Action Protocol (Check off completed steps):
+            </h4>
+            <div id="stepsList">
+              <!-- Steps rendered here -->
+            </div>
+          </div>
+
+          <!-- Dos and Donts Grid -->
+          <div class="dos-donts-grid">
+            <div class="dos-box">
+              <div class="box-title">✓ What to Do</div>
+              <ul id="dosList"></ul>
+            </div>
+            <div class="donts-box">
+              <div class="box-title">✕ What NOT to Do</div>
+              <ul id="dontsList"></ul>
+            </div>
+          </div>
+
+          <!-- Red Flags Box -->
+          <div class="red-flags-box" id="redFlagsContainer">
+            <div class="red-flags-title">
+              <span>🚨</span> RED-FLAG WARNINGS (CALL 911 / EMS IF PRESENT):
+            </div>
+            <ul id="redFlagsList" style="list-style:disc; margin-left:1.25rem; font-size:0.85rem; color:#fca5a5;"></ul>
+          </div>
+
+          <!-- Equipment & Supplies -->
+          <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid var(--border-color);">
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:0.4rem;">
+              🧰 Recommended Equipment & Supplies:
+            </div>
+            <div id="equipmentList" style="display:flex; gap:0.4rem; flex-wrap:wrap;"></div>
+          </div>
+
+        </div>
+
+        <!-- Placeholder when loading / initial -->
+        <div id="resultsPlaceholder" style="display:none; text-align:center; padding:3rem 1rem;">
+          <div style="font-size:3rem; margin-bottom:1rem;">⚡</div>
+          <h3 style="font-weight:700;">Ready to Assist</h3>
+          <p style="color:var(--text-secondary); font-size:0.9rem;">
+            Select a quick emergency above or enter a description / photo to generate structured first-aid guidance.
+          </p>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- SOS Dispatch Modal -->
+  <div class="modal-overlay" id="sosModal" role="dialog" aria-modal="true" aria-labelledby="sosModalTitle">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #ef4444; padding-bottom:0.5rem;">
+        <h2 id="sosModalTitle" style="color:#ef4444; font-size:1.35rem; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+          <span>🆘</span> Campus Emergency SOS Broadcast
+        </h2>
+        <button class="btn-icon" id="btnCloseSosModal" style="border:none;">✕</button>
+      </div>
+
+      <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
+        Automatically alerts Campus Police, Campus Health Center, and Lab Safety Officers with your location and incident telemetry.
+      </p>
+
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:0.85rem; font-weight:700; margin-bottom:0.35rem;">📍 Campus Building / Location:</label>
+        <select id="sosBuildingSelect" style="width:100%; margin-bottom:0.5rem;">
+          <option value="Science Complex">Science Complex (Chemistry / Biology Labs)</option>
+          <option value="Engineering Hall">Engineering & Physics Hall</option>
+          <option value="University Library">Main University Library</option>
+          <option value="Student Union">Student Union & Dining Hall</option>
+          <option value="Dormitory Block A">Dormitory Block A</option>
+          <option value="Dormitory Block B">Dormitory Block B</option>
+          <option value="Sports Arena">Athletics Fieldhouse & Arena</option>
+        </select>
+        <input type="text" id="sosRoomInput" placeholder="Room / Floor / Landmark (e.g., Lab 304 / 3rd Floor)" value="Lab 304" style="width:100%;">
+        <div id="sosGpsStatus" style="font-size:0.75rem; color:#38bdf8; margin-top:0.35rem;">📍 Fetching GPS Location...</div>
+      </div>
+
+      <div style="margin-bottom:1.25rem;">
+        <label style="display:block; font-size:0.85rem; font-weight:700; margin-bottom:0.35rem;">👥 Designated Responders to Notify:</label>
+        <div style="font-size:0.85rem; background:var(--bg-primary); padding:0.75rem; border-radius:8px; border:1px solid var(--border-color);">
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+            <input type="checkbox" checked disabled> <strong>Campus Police & 911 Bridge</strong> (Ext 911 / 555-019-9111)
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+            <input type="checkbox" checked disabled> <strong>Campus Health Clinic / Infirmary</strong> (555-019-2800)
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" checked disabled> <strong>Lab Safety & Hazmat Officer</strong> (555-019-4321)
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-sos-primary" id="btnConfirmDispatch" style="width:100%; justify-content:center; padding:0.85rem; font-size:1.05rem;">
+        🚨 CONFIRM & BROADCAST EMERGENCY SOS
+      </button>
+
+      <div id="sosDispatchResult" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Screen Strobe & Alarm Beacon Overlay -->
+  <div class="beacon-overlay" id="beaconOverlay">
+    <h1>🚨 EMERGENCY 🚨</h1>
+    <p style="font-size:1.5rem; font-weight:800; background:black; color:white; padding:8px 24px; border-radius:9999px; margin-top:1rem;">
+      TAP ANYWHERE TO STOP BEACON
+    </p>
+  </div>
+
+  <!-- Settings Modal (Gemini API Key) -->
+  <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <div class="modal-content" style="border-color:#38bdf8;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-color); padding-bottom:0.5rem;">
+        <h2 id="settingsModalTitle" style="color:#38bdf8; font-size:1.25rem; font-weight:700;">
+          ⚙️ Assistant Settings & AI Configuration
+        </h2>
+        <button class="btn-icon" id="btnCloseSettings" style="border:none;">✕</button>
+      </div>
+      
+      <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
+        CampusPulse operates with verified offline clinical medical protocols out-of-the-box. Add your Gemini API Key to enable live multimodal vision and real-time custom triage analysis.
+      </p>
+
+      <div style="margin-bottom:1.25rem;">
+        <label for="apiKeyInput" style="display:block; font-size:0.85rem; font-weight:700; margin-bottom:0.35rem;">
+          Gemini API Key (Optional):
+        </label>
+        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." style="width:100%;">
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
+          Stored locally in your browser's localStorage. Never sent to third parties.
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnSaveApiKey" style="width:100%;">
+        Save Settings
+      </button>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
