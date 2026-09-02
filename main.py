@@ -322,16 +322,39 @@ async def get_languages():
     return JSONResponse(content=LANGUAGE_TRANSLATIONS)
 
 # Mount static frontend
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-if not os.path.exists(static_dir):
-    os.makedirs(static_dir, exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+possible_static_dirs = [
+    os.path.join(BASE_DIR, "public"),
+    os.path.join(BASE_DIR, "static"),
+    os.path.join(os.path.dirname(BASE_DIR), "public"),
+    os.path.join(os.path.dirname(BASE_DIR), "static"),
+    "public",
+    "static"
+]
 
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
+static_dir = None
+for d in possible_static_dirs:
+    if os.path.exists(d) and os.path.isdir(d):
+        static_dir = d
+        break
+
+if static_dir:
+    try:
+        app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    except Exception as e:
+        print(f"Static mounting notice: {e}")
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
-    index_file = os.path.join(static_dir, "index.html")
-    if os.path.exists(index_file):
-        with open(index_file, "r", encoding="utf-8") as f:
-            return f.read()
-    return "<h1>CampusPulse Backend is running. Please add static/index.html</h1>"
+    candidate_files = [
+        os.path.join(BASE_DIR, "public", "index.html"),
+        os.path.join(BASE_DIR, "static", "index.html"),
+        os.path.join(BASE_DIR, "index.html"),
+        os.path.join(os.path.dirname(BASE_DIR), "public", "index.html"),
+        os.path.join(os.path.dirname(BASE_DIR), "static", "index.html"),
+    ]
+    for candidate in candidate_files:
+        if os.path.exists(candidate):
+            with open(candidate, "r", encoding="utf-8") as f:
+                return f.read()
+    return "<h1>CampusPulse: Health & Safety Companion is live.</h1>"
